@@ -287,5 +287,5 @@ if __name__ == '__main__':
     canvas.bind("<ButtonRelease-1>", lambda a: bttnRelease(a))
     
     canvas.pack()
-    window.after(1, funcDispatch)
+    window.after(1, funcDispatch) #currently blocks mainloop, need threading
     tk.mainloop()
