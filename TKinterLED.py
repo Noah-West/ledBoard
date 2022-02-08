@@ -1,26 +1,33 @@
 import math
-from random import random
+import random
 import tkinter as tk
-from copy import deepcopy
 import time
+import threading
+
 newKeys = []
 heldKeys = []
+keyLock = threading.Lock()
+
 def bttnPress(a):
-  global heldKeys, newKeys
-  newKeys.append((int(a.x/50),int(a.y/50)))
-  heldKeys.append((int(a.x/50),int(a.y/50)))
+  with keyLock:
+    global heldKeys, newKeys
+    newKeys.append((int(a.x/50),int(a.y/50)))
+    heldKeys.append((int(a.x/50),int(a.y/50)))
 def bttnRelease(a):
+  with keyLock:
     global heldKeys
     heldKeys = []
 def readKeys():
     """Returns newly pressed keys, as well as all keys being held
     (List newKeys, List pressedKeys)"""
-    global newKeys, heldKeys
-    return(newKeys, heldKeys)
+    with keyLock:
+        global newKeys
+        locNewKeys = newKeys
+        newKeys = []
+        return(locNewKeys, heldKeys)
+    
 def drawGrid(grid):
-#     print()
     for y, row in enumerate(grid):
-#         print(row)
         for x, val in enumerate(row):
             drawPixel(x,y,val)
 def drawPixel(x, y, c):
@@ -188,8 +195,8 @@ def heatMap():
         newGrid = pixelGrid.copy()
         
         #calculate heat transfer
-        for y, row in enumerate(pixelGrid):
-            for x, val in enumerate(pixelGrid):
+        for y in range(8):
+            for x in range(8):
                 for ax, ay in adjGrid[y][x]:
                     newGrid[y][x] += cHeatTrans*(pixelGrid[ay][ax] - pixelGrid[y][x]) #weighted average with neighbor
                 newGrid[y][x] *= cHeatLoss #gradually loose heat, to prevent saturation
@@ -265,9 +272,16 @@ def funcDispatch():
     mode = 0
     modes = [heatMap, wave, holdCol, pressCol]
     while(True):
+        print("Entering mode {}".format(mode))
         modes[mode]()
+        print("exit mode {}".format(mode))
         mode = (mode+1)%len(modes)
-        setCol() 
+        setCol()
+        global heldKeys, newKeys, keyLock
+        with keyLock:
+            heldKeys = []
+            newKeys = []
+        time.sleep(1) 
 
 
 if __name__ == '__main__':
@@ -285,7 +299,10 @@ if __name__ == '__main__':
             bttnGrid[y][x] = canvas.create_rectangle(x*50, y*50, x*50+50, y*50+50, fill='#000000', outline='#FFFFFF')
     canvas.bind("<Button-1>", lambda a: bttnPress(a))
     canvas.bind("<ButtonRelease-1>", lambda a: bttnRelease(a))
-    
     canvas.pack()
-    window.after(1, funcDispatch) #currently blocks mainloop, need threading
+
+    #start  main functionality
+    funcThread = threading.Thread(target = funcDispatch, daemon = True) 
+    funcThread.start()
+
     tk.mainloop()
