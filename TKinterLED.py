@@ -248,23 +248,6 @@ def funcDispatch():
 
 
 if __name__ == '__main__':
+    #init either board or tkinter
+    startup()
     
-    window = tk.Tk()
-    window.title("Hello wold")
-    window.geometry("400x400")
-
-    bttnGrid = [[0 for x in range(8)] for y in range(8)]
-    canvas = tk.Canvas(width = 400, height = 400, bg = "blue")
-
-    for y in range(8):
-        for x in range(8):
-            bttnGrid[y][x] = canvas.create_rectangle(x*50, y*50, x*50+50, y*50+50, fill='#000000', outline='#FFFFFF')
-    canvas.bind("<Button-1>", lambda a: bttnPress(a))
-    canvas.bind("<ButtonRelease-1>", lambda a: bttnRelease(a))
-    canvas.pack()
-
-    #start  main functionality
-    funcThread = threading.Thread(target = funcDispatch, daemon = True) 
-    funcThread.start()
-
-    tk.mainloop()

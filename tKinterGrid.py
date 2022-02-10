@@ -19,7 +19,7 @@ def cleanupGrid():
     time.sleep(1) 
 def bttnPress(a):
   with keyLock:
-    global heldKeys, newKeys
+    # global heldKeys, newKeys
     newKeys.append((int(a.x/50),int(a.y/50)))
     heldKeys.append((int(a.x/50),int(a.y/50)))
 def bttnRelease(a):
