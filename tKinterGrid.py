@@ -1,9 +1,5 @@
-import time
-import math
-import random
 import tkinter as tk
 import threading
-
 
 newKeys = []
 heldKeys = []
