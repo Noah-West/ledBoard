@@ -138,9 +138,27 @@ def holdCol():
         grid.stripShow()
         while(time.time()<nextDrawTime):
             pass
-
 def rainbow(wait_ms=20, iterations=1):
     """Draw rainbow that fades across all pixels at once."""
+    drawInterval = 1/40
+    rainbowOffset = 0
+    while(True):
+        nextDrawTime = time.time()+drawInterval
+        
+        k = grid.readKeys()[1]
+        if(modeBtn in k):
+            return
+            
+        rainbowOffset = (rainbowOffset + 2) & 0xFF
+        for i in range(8):
+            col = wheel((i*32+rainbowOffset) & 255)
+            for j in range(8):
+                grid.drawPixel(j, i, col)
+        grid.stripShow()
+        while(time.time()<nextDrawTime):
+            pass
+def rainbowFine(wait_ms=20, iterations=1):
+    """Fades through a rainbow linearly,with full led resolution"""
     drawInterval = 1/40
     rainbowOffset = 0
     while(True):
@@ -237,6 +255,8 @@ def simon():
             while(True):
                 keys = grid.readKeys()[0]
                 if(keys):
+                    if(modeBtn in keys):
+                        return
                     #lose if key not in right region
                     x,y = keys[0]
                     if(floor(x/4)!=cx or floor(y/4)!=cy):
@@ -257,18 +277,25 @@ def simon():
                 break
         if(restart):#restart game
             simonSequence = []
-def testKeys():
-    while(True):
-        print(grid.readKeys())
-        time.sleep(1)
+def transition(col, interval = 1/10):
+    for i in range(1, 8):
+        for x in range(i):
+            grid.drawPixel(x,i,col)
+        for y in range(i-1):
+            grid.drawPixel(i, y, col)
+        grid.stripShow()
+        time.sleep(interval)
+
 def mainLoop():
     mode = 0
-    modes = [simon, heatMap, wave, holdCol, pressCol]
+    modes = [rainbow, simon, heatMap, wave, holdCol, pressCol]
     while(True):
         # print("Entering mode {}".format(mode))
         modes[mode]()
         # print("exit mode {}".format(mode))
         mode = (mode+1)%len(modes)
+        transition(col = 0xFFFFFF)
+        transition(0)
         grid.setCol()
         grid.cleanupGrid()
         time.sleep(1) 

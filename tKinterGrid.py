@@ -20,7 +20,7 @@ def startup():
 
     for y in range(8):
         for x in range(8):
-            bttnGrid[y][x] = canvas.create_rectangle(x*50, y*50, x*50+50, y*50+50, fill='#000000', outline='#FFFFFF')
+            bttnGrid[7-y][7-x] = canvas.create_rectangle(x*50, y*50, x*50+50, y*50+50, fill='#000000', outline='#FFFFFF')
     canvas.bind("<Button-1>", lambda a: bttnPress(a))
     canvas.bind("<ButtonRelease-1>", lambda a: bttnRelease(a))
     canvas.pack()
@@ -41,8 +41,8 @@ def cleanupGrid():
 def bttnPress(a):
   with keyLock:
     # global heldKeys, newKeys #don't think I need?
-    newKeys.append((int(a.x/50),int(a.y/50)))
-    heldKeys.append((int(a.x/50),int(a.y/50)))
+    newKeys.append((7-int(a.x/50),7-int(a.y/50)))
+    heldKeys.append((7-int(a.x/50),7-int(a.y/50)))
 def bttnRelease(a):
   with keyLock:
     global heldKeys
