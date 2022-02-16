@@ -196,7 +196,7 @@ def heatMap():
     cHeatTrans = .15 #constant for heat transfer between cells
     cHeatLoss = 0.99   #heat lost per cell per loop
     cHeatAdd = .1    #heat added per button per loop
-    
+    transition(heatCol(0), 1/20)
     drawInterval = 1/40
     while(True):
         nextDrawTime = time.time()+drawInterval
@@ -278,23 +278,24 @@ def simon():
         if(restart):#restart game
             simonSequence = []
 def transition(col, interval = 1/10):
-    for i in range(1, 8):
+    """Gradually paints a square <col> filling the board, starting at mode btn"""
+    for i in range(8):
         for x in range(i):
             grid.drawPixel(x,i,col)
-        for y in range(i-1):
+        for y in range(i+1):
             grid.drawPixel(i, y, col)
         grid.stripShow()
         time.sleep(interval)
 
 def mainLoop():
     mode = 0
-    modes = [rainbow, simon, heatMap, wave, holdCol, pressCol]
+    modes = [rainbow, simon, heatMap, wave, pressCol]
     while(True):
         # print("Entering mode {}".format(mode))
         modes[mode]()
         # print("exit mode {}".format(mode))
         mode = (mode+1)%len(modes)
-        transition(col = 0xFFFFFF)
+        transition(col = 0x888888)
         transition(0)
         grid.setCol()
         grid.cleanupGrid()
