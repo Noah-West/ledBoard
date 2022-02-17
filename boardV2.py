@@ -11,6 +11,7 @@ from math import floor, sqrt
 import time 
 import random
 import threading
+import font
 if(realGridSelect):
     import realGrid as grid
 else:
@@ -233,23 +234,18 @@ def simon():
     sColors.append(rgbColor(200,200,0)) #yellow-green
 
     simonSequence = []
-    grid4 = [(x,y) for y in range(4) for x in range(4)]
-    #print(grid4)
-    while(True):
+    while(True): #looping until modeBtn
         restart = False
         time.sleep(.5)
         simonSequence.append((random.randint(0,1), random.randint(0,1)))
-        # print(simonSequence)
         #showing the sequence
         for cx, cy in simonSequence:
-            
-            for x,y in grid4:
-                grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
+            [grid.drawPixel(cx*4 + x+1-cx, cy*4 + y+1-cy, sColors[cy*2+cx]) for x in range(3) for y in range(3)]
             grid.stripShow()
-            time.sleep(1)
+            time.sleep(.6)
             grid.setCol(c = 0)
             grid.stripShow()
-            time.sleep(.5) 
+            time.sleep(.4) 
         for cx, cy in simonSequence:
             #waiting for keypress
             while(True):
@@ -260,24 +256,20 @@ def simon():
                     #lose if key not in right region
                     x,y = keys[0]
                     if(floor(x/4)!=cx or floor(y/4)!=cy):
-                        # print("wrong bttn")
                         restart = True
                         break
                     else: #move to next in sequence for correct keypress
-                        for x,y in grid4:
-                            grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
+                        [grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx]) for x in range(4) for y in range(4)]
                         grid.stripShow()
-                        # print("color shown(user)")
-                        time.sleep(.75)
+                        time.sleep(.5)
                         grid.setCol(0)
                         grid.stripShow()
                         break
             if(restart): #break for cx...
-                # print('restarting')
                 break
         if(restart):#restart game
             simonSequence = []
-def transition(col, interval = 1/10):
+def transition(col, interval = 1/15):
     """Gradually paints a square <col> filling the board, starting at mode btn"""
     for i in range(8):
         for x in range(i):
@@ -286,10 +278,47 @@ def transition(col, interval = 1/10):
             grid.drawPixel(i, y, col)
         grid.stripShow()
         time.sleep(interval)
-
+def fontInp():
+    drawInterval = 1/40
+    pixelGrid = [[0 for x in range(8)] for y in range(8)] #8x8 grid, color index for each pixel
+    while(True):
+        nextDrawTime = time.time()+drawInterval
+        kDownEvents = grid.readKeys()[0]
+        if(modeBtn in kDownEvents):
+            return
+        if((1,1) in kDownEvents):
+            k = []
+            for y, row in enumerate(pixelGrid):
+                for x, val in enumerate(row):
+                    if(val != 0):
+                        k.append((7-x,7-y))
+            if((6,6) in k):
+                k.remove((6,6))
+            print(k)
+            pixelGrid = [[0 for x in range(8)] for y in range(8)] #8x8 grid, color index for each pixel
+        for x,y in kDownEvents:
+            colInd = colors.index(pixelGrid[y][x]) #get current col ind
+            colInd = (colInd + 1)%2 #increment color ind
+            pixelGrid[y][x] = colors[colInd] #set new color
+        grid.drawGrid(pixelGrid)
+        while(time.time()<nextDrawTime):
+            pass
+def testDigits():
+    i = 0
+    while(True):
+        for x,y in font.digits[i]:
+            grid.drawPixel(6-x,7-y, colors[1])
+        keys = []
+        while(not keys):
+            keys = grid.readKeys()[0]
+        if(modeBtn in keys):
+            return
+        i = (i + 1)%len(font.digits)
+        grid.setCol()
+                
 def mainLoop():
     mode = 0
-    modes = [rainbow, simon, heatMap, wave, pressCol]
+    modes = [testDigits, fontInp, rainbow, simon, heatMap, wave, pressCol]
     while(True):
         # print("Entering mode {}".format(mode))
         modes[mode]()
