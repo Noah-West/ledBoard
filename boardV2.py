@@ -239,7 +239,7 @@ def simon():
         restart = False
         time.sleep(.5)
         simonSequence.append((random.randint(0,1), random.randint(0,1)))
-        print(simonSequence)
+        # print(simonSequence)
         #showing the sequence
         for cx, cy in simonSequence:
             
@@ -260,20 +260,20 @@ def simon():
                     #lose if key not in right region
                     x,y = keys[0]
                     if(floor(x/4)!=cx or floor(y/4)!=cy):
-                        print("wrong bttn")
+                        # print("wrong bttn")
                         restart = True
                         break
                     else: #move to next in sequence for correct keypress
                         for x,y in grid4:
                             grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
                         grid.stripShow()
-                        print("color shown(user)")
+                        # print("color shown(user)")
                         time.sleep(.75)
                         grid.setCol(0)
                         grid.stripShow()
                         break
             if(restart): #break for cx...
-                print('restarting')
+                # print('restarting')
                 break
         if(restart):#restart game
             simonSequence = []
