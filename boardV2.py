@@ -10,10 +10,11 @@ realGridSelect = False
 from math import floor, sqrt
 import time 
 import random
+import threading
 if(realGridSelect):
-    from realGrid import *
+    import realGrid as grid
 else:
-    from tKinterGrid import *
+    import tKinterGrid as grid
 
 def rgbColor(r,g,b):
     return (r<<16)+(g<<8)+b
@@ -54,7 +55,7 @@ def heatCol(amt):
 def testHeat():
     for x in range(8):
         for y in range(8):
-            drawPixel(x, y, heatCol(x*32))
+            grid.drawPixel(x, y, heatCol(x*32))
 def wheel(pos):
     """Generate rainbow colors across 0-255 positions."""
     if pos < 85:
@@ -83,7 +84,7 @@ def wave():
     while(True):
         nextDrawTime = time.time()+drawInterval
         pixelGrid = [[0 for x in range(8)] for y in range(8)] #8x8 grid, rgb vals for each pixel
-        kDownEvents = readKeys()[0]
+        kDownEvents = grid.readKeys()[0]
 
         if modeBtn in kDownEvents:
             return #go back to mode switch
@@ -98,7 +99,7 @@ def wave():
                 continue
             seedPoints[i][2] = seedPoints[i][2]*1.02+.05
             calcWavePoint(pixelGrid, seedPoints[i])
-        drawGrid(pixelGrid)
+        grid.drawGrid(pixelGrid)
 
         while(time.time()<nextDrawTime):
             pass
@@ -108,14 +109,14 @@ def pressCol():
     pixelGrid = [[0 for x in range(8)] for y in range(8)] #8x8 grid, color index for each pixel
     while(True):
         nextDrawTime = time.time()+drawInterval
-        kDownEvents = readKeys()[0]
+        kDownEvents = grid.readKeys()[0]
         if(modeBtn in kDownEvents):
             return
         for x,y in kDownEvents:
             colInd = colors.index(pixelGrid[y][x]) #get current col ind
             colInd = (colInd + 1)%len(colors) #increment color ind
             pixelGrid[y][x] = colors[colInd] #set new color
-        drawGrid(pixelGrid)
+        grid.drawGrid(pixelGrid)
         while(time.time()<nextDrawTime):
             pass    
 
@@ -126,18 +127,17 @@ def holdCol():
     while(True):
         nextDrawTime = time.time()+drawInterval
         
-        heldKeys = readKeys()[1]
+        heldKeys = grid.readKeys()[1]
         if(modeBtn in heldKeys):
             return
         for x,y in heldKeys: #find new key presses
             pixelGrid[y][x] = (pixelGrid[y][x]+3)&255    
         for y, row in enumerate(pixelGrid):
                 for x, val in enumerate(row):
-                    drawPixel(x,y,multColor(wheel(val), .7))
-        stripShow()
+                    grid.drawPixel(x,y,multColor(wheel(val), .7))
+        grid.stripShow()
         while(time.time()<nextDrawTime):
             pass
-
 def rainbow(wait_ms=20, iterations=1):
     """Draw rainbow that fades across all pixels at once."""
     drawInterval = 1/40
@@ -145,7 +145,26 @@ def rainbow(wait_ms=20, iterations=1):
     while(True):
         nextDrawTime = time.time()+drawInterval
         
-        k = readKeys()[1]
+        k = grid.readKeys()[1]
+        if(modeBtn in k):
+            return
+            
+        rainbowOffset = (rainbowOffset + 2) & 0xFF
+        for i in range(8):
+            col = wheel((i*32+rainbowOffset) & 255)
+            for j in range(8):
+                grid.drawPixel(j, i, col)
+        grid.stripShow()
+        while(time.time()<nextDrawTime):
+            pass
+def rainbowFine(wait_ms=20, iterations=1):
+    """Fades through a rainbow linearly,with full led resolution"""
+    drawInterval = 1/40
+    rainbowOffset = 0
+    while(True):
+        nextDrawTime = time.time()+drawInterval
+        
+        k = grid.readKeys()[1]
         if(modeBtn in k):
             return
             
@@ -153,8 +172,8 @@ def rainbow(wait_ms=20, iterations=1):
         for i in range(16):
             col = wheel((i*16+rainbowOffset) & 255)
             for j in range(24):
-                setLED(i*24+j, col)
-        stripShow()
+                grid.setLED(i*24+j, col)
+        grid.stripShow()
         while(time.time()<nextDrawTime):
             pass
     
@@ -177,12 +196,12 @@ def heatMap():
     cHeatTrans = .15 #constant for heat transfer between cells
     cHeatLoss = 0.99   #heat lost per cell per loop
     cHeatAdd = .1    #heat added per button per loop
-    
+    transition(heatCol(0), 1/20)
     drawInterval = 1/40
     while(True):
         nextDrawTime = time.time()+drawInterval
         
-        heldKeys = readKeys()[1]
+        heldKeys = grid.readKeys()[1]
         if(modeBtn in heldKeys):
             return
         for x,y in heldKeys:
@@ -196,9 +215,9 @@ def heatMap():
                     newGrid[y][x] += cHeatTrans*(pixelGrid[ay][ax] - pixelGrid[y][x]) #weighted average with neighbor
                 newGrid[y][x] *= cHeatLoss #gradually loose heat, to prevent saturation
                 newGrid[y][x] = min(max(0,newGrid[y][x]),255)
-                drawPixel(x,y,heatCol(round(newGrid[y][x])))
+                grid.drawPixel(x,y,heatCol(round(newGrid[y][x])))
         pixelGrid = newGrid
-        stripShow()
+        grid.stripShow()
         # for row in newGrid:
         #     print(" ".join(["{:02X}".format(int(round(i))) for i in row]))
         
@@ -207,7 +226,6 @@ def heatMap():
         
 def simon():
     """Plays the simon game"""
-    drawInterval = 1
     sColors = []
     sColors.append(rgbColor(255, 0, 0)) #red
     sColors.append(rgbColor(0,255,0)) #blue
@@ -216,62 +234,71 @@ def simon():
 
     simonSequence = []
     grid4 = [(x,y) for y in range(4) for x in range(4)]
-    print(grid4)
-    restart = False
+    #print(grid4)
     while(True):
-        nextDrawTime = time.time()+drawInterval
-
+        restart = False
+        time.sleep(.5)
         simonSequence.append((random.randint(0,1), random.randint(0,1)))
         print(simonSequence)
         #showing the sequence
         for cx, cy in simonSequence:
+            
             for x,y in grid4:
-                drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
-            stripShow()
+                grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
+            grid.stripShow()
             time.sleep(1)
-            setCol(c = 0)
-            stripShow()
+            grid.setCol(c = 0)
+            grid.stripShow()
             time.sleep(.5) 
-        
         for cx, cy in simonSequence:
             #waiting for keypress
             while(True):
-                keys = readKeys()[0]
+                keys = grid.readKeys()[0]
                 if(keys):
+                    if(modeBtn in keys):
+                        return
                     #lose if key not in right region
                     x,y = keys[0]
                     if(floor(x/4)!=cx or floor(y/4)!=cy):
+                        print("wrong bttn")
                         restart = True
                         break
                     else: #move to next in sequence for correct keypress
                         for x,y in grid4:
-                            drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
-                        stripShow()
-                        while((x,y) in readKeys()[1]):
-                            time.sleep(.1)
-                        setCol(0)
-                        stripShow()
+                            grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
+                        grid.stripShow()
+                        print("color shown(user)")
+                        time.sleep(.75)
+                        grid.setCol(0)
+                        grid.stripShow()
+                        break
             if(restart): #break for cx...
+                print('restarting')
                 break
         if(restart):#restart game
             simonSequence = []
-            
-        while(time.time()<nextDrawTime):
-            pass
-def testKeys():
-    while(True):
-        print(readKeys())
-        time.sleep(1)
+def transition(col, interval = 1/10):
+    """Gradually paints a square <col> filling the board, starting at mode btn"""
+    for i in range(8):
+        for x in range(i):
+            grid.drawPixel(x,i,col)
+        for y in range(i+1):
+            grid.drawPixel(i, y, col)
+        grid.stripShow()
+        time.sleep(interval)
+
 def mainLoop():
     mode = 0
-    modes = [heatMap, wave, holdCol, pressCol]
+    modes = [rainbow, simon, heatMap, wave, pressCol]
     while(True):
         # print("Entering mode {}".format(mode))
         modes[mode]()
         # print("exit mode {}".format(mode))
         mode = (mode+1)%len(modes)
-        setCol()
-        cleanupGrid()
+        transition(col = 0x888888)
+        transition(0)
+        grid.setCol()
+        grid.cleanupGrid()
         time.sleep(1) 
     
 
@@ -280,9 +307,9 @@ if __name__ == '__main__':
     print ('Starting LED Board')
     print ('Press Ctrl-C to quit.')
     print("Ready")
-    startup()
+    grid.startup()
     mainLoopThread = threading.Thread(name = "funcLoop", target = mainLoop, daemon = True) 
     mainLoopThread.start()
 
-    block()
+    grid.block()
     

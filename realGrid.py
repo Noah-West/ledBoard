@@ -11,7 +11,6 @@ from neopixel import *
 import digitalio
 import adafruit_matrixkeypad
 import board
-_run = False
 
 
 # LED strip configuration:
@@ -43,7 +42,6 @@ def startup():
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
     strip.begin()
-    _run = True
 def block():
     """Blocks Thread until keyboard interrupt"""
     try:
