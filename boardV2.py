@@ -8,9 +8,11 @@
 realGridSelect = False
 
 from math import floor, sqrt
+from operator import mod
 import time 
 import random
 import threading
+import font
 if(realGridSelect):
     import realGrid as grid
 else:
@@ -37,22 +39,26 @@ modeBtn = (0,0)
 #util functions for drawing
 
 def sumColors(a, b):
+    """sums two colors togeather, adding R, G, and B seperatly"""
     rSum = min((a & redMask) + (b & redMask), redMask)
     gSum = min((a & greenMask) + (b & greenMask), greenMask)
     bSum = min((a & blueMask) + (b & blueMask), blueMask)
     return rSum + gSum + bSum 
-def multColor(col, mult): # 
+def multColor(col, mult):
+    """multiplies the RGB color by a scalar, designed for multiples < 1"""
     rVal = min(int((col&redMask)  * mult), redMask  ) & redMask
     gVal = min(int((col&greenMask)* mult), greenMask) & greenMask
     bVal = min(int((col&blueMask) * mult), blueMask ) & blueMask
     return rVal+gVal+bVal    
 
 def heatCol(amt):
+    """converts 0-255 'heat' value to a RGB value"""
     red = int(min(amt*1.5,255))
     green = max(2*amt-300,0)
     blue = int(max(255-2*amt,0)+green)
     return (red<<16)+(green<<8)+blue
 def testHeat():
+    """displays the heat gradient as a test"""
     for x in range(8):
         for y in range(8):
             grid.drawPixel(x, y, heatCol(x*32))
@@ -66,18 +72,33 @@ def wheel(pos):
     else:
         pos -= 170
         return rgbColor(0, pos * 3, 255 - pos * 3)
-
+def clearDown(t = .2):
+    """wipes the screen from top to bottom, waiting <t> between each row"""
+    for y in range(8):
+        for x in range(8):
+            grid.drawPixel(x, 7-y, 0)
+        time.sleep(t)
+def transition(col, interval = 1/15):
+    """Gradually paints a square <col> filling the board, starting at mode btn"""
+    for i in range(8):
+        for x in range(i):
+            grid.drawPixel(x,i,col)
+        for y in range(i+1):
+            grid.drawPixel(i, y, col)
+        grid.stripShow()
+        time.sleep(interval)
 # Define functions which animate LEDs in various ways.
 def calcWavePoint(grid, point):
     """Adds the wave values for a specific seed point, outputing back to grid"""
     for y, row in enumerate(grid):
         for x, val in enumerate(row):
             err = sqrt((point[0]-x)**2+(point[1]-y)**2)-point[2]
-            weightErr = .95-.8*err**2
+            weightErr = .65-.8*err**2
             mult = max(0, max(min(weightErr,1),0))
             grid[y][x] = sumColors(val, multColor(point[3], mult)) #add the color, multiplied by ramping 
 
 def wave():
+    """creates circular waves that mova away from a button press"""
     seedPoints = []
     drawInterval = 1/40
 
@@ -105,6 +126,7 @@ def wave():
             pass
     
 def pressCol():
+    """Cycles through list of colors when a button is pressed"""
     drawInterval = 1/40
     pixelGrid = [[0 for x in range(8)] for y in range(8)] #8x8 grid, color index for each pixel
     while(True):
@@ -277,19 +299,96 @@ def simon():
                 break
         if(restart):#restart game
             simonSequence = []
-def transition(col, interval = 1/10):
-    """Gradually paints a square <col> filling the board, starting at mode btn"""
-    for i in range(8):
-        for x in range(i):
-            grid.drawPixel(x,i,col)
-        for y in range(i+1):
-            grid.drawPixel(i, y, col)
-        grid.stripShow()
-        time.sleep(interval)
+
+def snowgame():
+    white = 0xffffff
+    while(True): #restart loop, loop after end of game
+        piles = [0 for __ in range(8)] #acumulated pixel height
+        current = [[] for __ in range(8)] #currently falling flakes
+        score = 0
+        movInterval = 3/4
+        nextMov = time.time()+movInterval
+        addInterval = 2
+        nextAdd = time.time()
+        drawInt = 1/10
+        while(True): #gameplay loop, loop for each frame
+            nextDrawTime = time.time()+drawInt
+            grid.setCol()
+            #add more flakes
+            if(time.time()>nextAdd):
+                current[random.randint(0,7)].append(7)
+                nextAdd = time.time() + addInterval
+                addInterval *=.96
+            #move/remove flakes
+            if(time.time()>nextMov):
+                nextMov = time.time()+movInterval
+                movInterval *= .99
+                for x, vals in enumerate(current):
+                    for i, y in enumerate(vals):
+                        if(y < piles[x]):
+                            current[x].remove(y)
+                            piles[x] += 1
+                            continue
+                        current[x][i] -=1
+            #draw flakes
+            for x, vals in enumerate(current):
+                for y in vals:
+                    grid.drawPixel(x,y, white)        
+            if(max(piles)==8):
+                break
+            #draw piles
+            for x, height in enumerate(piles):
+                for i in range(height):
+                    grid.drawPixel(x, i, white) 
+            keys = grid.readKeys()[0]
+            if(modeBtn in keys):
+                return
+            for x, y in keys:
+                if(len(current[x])==0):
+                    continue
+                score += 1
+                current[x].remove(min(current[x]))
+            while(time.time()<nextDrawTime):
+                pass
+        clearDown(.2)
+        font.drawString("sc")
+        time.sleep(1)
+        grid.setCol()
+        font.drawNum(score)
+        time.sleep(2)
+
+def lines():
+    pressedGrid = []
+    for y in range(8):
+        row = []
+        for x in range(8):
+            row.append(0)
+        pressedGrid.append(row)
+    while(True):
+        keys = grid.readKeys()[0]
+        # print(keys)
+        if(len(keys)):
+            firstkey = keys[0]
+            x = firstkey[0]
+            y = firstkey[1]
+            if(modeBtn in keys):
+                return
+            if(pressedGrid[y][x]==1):    
+                for val in range(8):
+                    grid.drawPixel(val,y, 0)
+                    grid.drawPixel(x,val, 0)
+                pressedGrid[y][x] = 0
+            else:
+                pressedGrid[y][x] = 1
+                for val in range(8):
+                    grid.drawPixel(val,y, colors[5])
+                    grid.drawPixel(x,val, colors[2])
+        time.sleep(1/20)
 
 def mainLoop():
+    """dispatches control to different operating modes, resetting the grid in between"""
     mode = 0
-    modes = [rainbow, simon, heatMap, wave, pressCol]
+    modes = [snowgame, wave, lines, pressCol, rainbow, simon, heatMap, pressCol]
     while(True):
         # print("Entering mode {}".format(mode))
         modes[mode]()
@@ -299,7 +398,7 @@ def mainLoop():
         transition(0)
         grid.setCol()
         grid.cleanupGrid()
-        time.sleep(1) 
+        time.sleep(.25) 
     
 
 if __name__ == '__main__':
