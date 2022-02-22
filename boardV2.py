@@ -255,23 +255,18 @@ def simon():
     sColors.append(rgbColor(200,200,0)) #yellow-green
 
     simonSequence = []
-    grid4 = [(x,y) for y in range(4) for x in range(4)]
-    #print(grid4)
-    while(True):
+    while(True): #looping until modeBtn
         restart = False
         time.sleep(.5)
         simonSequence.append((random.randint(0,1), random.randint(0,1)))
-        # print(simonSequence)
         #showing the sequence
         for cx, cy in simonSequence:
-            
-            for x,y in grid4:
-                grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
+            [grid.drawPixel(cx*4 + x+1-cx, cy*4 + y+1-cy, sColors[cy*2+cx]) for x in range(3) for y in range(3)]
             grid.stripShow()
-            time.sleep(1)
+            time.sleep(.6)
             grid.setCol(c = 0)
             grid.stripShow()
-            time.sleep(.5) 
+            time.sleep(.4) 
         for cx, cy in simonSequence:
             #waiting for keypress
             while(True):
@@ -282,20 +277,16 @@ def simon():
                     #lose if key not in right region
                     x,y = keys[0]
                     if(floor(x/4)!=cx or floor(y/4)!=cy):
-                        # print("wrong bttn")
                         restart = True
                         break
                     else: #move to next in sequence for correct keypress
-                        for x,y in grid4:
-                            grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx])
+                        [grid.drawPixel(cx*4 + x, cy*4 + y, sColors[cy*2+cx]) for x in range(4) for y in range(4)]
                         grid.stripShow()
-                        # print("color shown(user)")
-                        time.sleep(.75)
+                        time.sleep(.5)
                         grid.setCol(0)
                         grid.stripShow()
                         break
             if(restart): #break for cx...
-                # print('restarting')
                 break
         if(restart):#restart game
             simonSequence = []
@@ -388,7 +379,7 @@ def lines():
 def mainLoop():
     """dispatches control to different operating modes, resetting the grid in between"""
     mode = 0
-    modes = [snowgame, wave, lines, pressCol, rainbow, simon, heatMap, pressCol]
+    modes = [snowgame, wave, lines, pressCol, rainbow, simon, heatMap]
     while(True):
         # print("Entering mode {}".format(mode))
         modes[mode]()
