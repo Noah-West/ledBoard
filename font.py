@@ -1,7 +1,7 @@
 import time
 import boardV2 as main
 
-if(main.realGridSelect):
+if(main.realBoard):
     import realGrid as grid
 else:
     import tKinterGrid as grid

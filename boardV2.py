@@ -4,17 +4,18 @@
 # Direct port of the Arduino NeoPixel library strandtest example.  Showcases
 # various animations on a strip of NeoPixels.
 
-#true to control physical grid, false for tKinter Emulation
-realGridSelect = True
-
 from math import floor, sqrt
 from operator import mod
 import time 
 import random
 import threading
 import font
-if(realGridSelect):
+from os.path import exists as file_exists
+
+realBoard = False
+if(file_exists("realBoardFlag")):
     import realGrid as grid
+    realBoard = True
 else:
     import tKinterGrid as grid
 
@@ -380,7 +381,7 @@ def lines():
 def mainLoop():
     """dispatches control to different operating modes, resetting the grid in between"""
     mode = 0
-    modes = [rainbow, wave, pressCol, simon, heatMap]
+    modes = [pressCol, rainbow, wave, simon, heatMap]
 
     while(True):
         # print("Entering mode {}".format(mode))
