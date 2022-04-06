@@ -87,6 +87,7 @@ def readKeys():
     (List newKeys, List pressedKeys)"""
     global lastKeys
     keys = keypad.pressed_keys
+    #print(keys)
     heldKeys = []
     for k in keys: #find new key presses
         heldKeys.append((k%8, int(k/8)))

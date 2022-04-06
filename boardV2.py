@@ -5,7 +5,7 @@
 # various animations on a strip of NeoPixels.
 
 #true to control physical grid, false for tKinter Emulation
-realGridSelect = False
+realGridSelect = True
 
 from math import floor, sqrt
 from operator import mod
@@ -374,12 +374,14 @@ def lines():
                 for val in range(8):
                     grid.drawPixel(val,y, colors[5])
                     grid.drawPixel(x,val, colors[2])
+        grid.show()
         time.sleep(1/20)
 
 def mainLoop():
     """dispatches control to different operating modes, resetting the grid in between"""
     mode = 0
-    modes = [snowgame, wave, lines, pressCol, rainbow, simon, heatMap]
+    modes = [rainbow, wave, pressCol, simon, heatMap]
+
     while(True):
         # print("Entering mode {}".format(mode))
         modes[mode]()
@@ -390,16 +392,16 @@ def mainLoop():
         grid.setCol()
         grid.cleanupGrid()
         time.sleep(.25) 
-    
 
 if __name__ == '__main__':
     #init either board or tkinter
     print ('Starting LED Board')
     print ('Press Ctrl-C to quit.')
     print("Ready")
-    grid.startup()
-    mainLoopThread = threading.Thread(name = "funcLoop", target = mainLoop, daemon = True) 
-    mainLoopThread.start()
-
-    grid.block()
-    
+    try: 
+        grid.startup()
+        mainLoopThread = threading.Thread(name = "funcLoop", target = mainLoop, daemon = True) 
+        mainLoopThread.start()
+        grid.block()
+    except:
+        grid.setCol()
