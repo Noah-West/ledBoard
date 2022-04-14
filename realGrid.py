@@ -37,30 +37,34 @@ keypad = adafruit_matrixkeypad.Matrix_Keypad(rows, cols, keys)
 
 # util functions
 def startup():
-    # Create NeoPixel object with appropriate configuration.
+    """Create NeoPixel object with appropriate configuration."""
     global strip, _run        
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
     strip.begin()
 def block():
-    """Blocks Thread until keyboard interrupt"""
+    """Block Thread until keyboard interrupt. TKinter needs this to start its GUI listener"""
     try:
         while(True):
             pass
     except KeyboardInterrupt:
         setCol()
 def cleanupGrid():
+    """Tidy up board variables"""
     pixelGrid = [[0 for x in range(8)] for y in range(8)] #wipe pixel grid
     global lastKeys
     lastKeys = []
 
 #functions for interfacing with drawing 
 def drawGrid(grid):
+    """Writes RGB color values in <grid> to actual hardware"""
     for y, row in enumerate(grid):
         for x, val in enumerate(row):
             drawPixel(x,y,val)
     strip.show()
 def drawPixel(x, y, c):
+    """Writes RGB value to a specific pixel in the board buffer.
+    stripShow MUST be called after to actually send colors to the board."""
     tStart = y*48-x*3+45
     bStart = y*48+x*3
     strip.setPixelColor(bStart, c)
