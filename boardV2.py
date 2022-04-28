@@ -21,15 +21,22 @@ else:
 
 def rgbColor(r,g,b):
     return (r<<16)+(g<<8)+b
-colors = []
-colors.append(0) #Black
-colors.append(rgbColor(255, 0, 0)) #red
-colors.append(rgbColor(0,255,0)) #blue
-colors.append(rgbColor(0,0,255)) #green
-colors.append(rgbColor(200,200,0)) #yellow-green
-colors.append(rgbColor(255, 140, 10)) #orange
-colors.append(rgbColor(200, 200, 200)) #white
-colors.append(rgbColor(255, 0, 200)) #violet
+colors = {
+    "red": rgbColor(255, 0, 0),
+    "blue": rgbColor(0,255,0),
+    "green": rgbColor(0,0,255),
+    "white": rgbColor(200,200,200)
+}
+
+colList = []
+colList.append(0) #Black
+colList.append(rgbColor(255, 0, 0)) #red
+colList.append(rgbColor(0,255,0)) #blue
+colList.append(rgbColor(0,0,255)) #green
+colList.append(rgbColor(200,200,0)) #yellow-green
+colList.append(rgbColor(255, 140, 10)) #orange
+colList.append(rgbColor(200, 200, 200)) #white
+colList.append(rgbColor(255, 0, 200)) #violet
 
 redMask = 0xFF<<16
 greenMask = 0xFF<<8 
@@ -112,7 +119,7 @@ def wave():
             return #go back to mode switch
 
         for key in kDownEvents:
-            col = colors[random.randint(1,len(colors)-1)]
+            col = colList[random.randint(1,len(colList)-1)]
             seedPoints.append([key[0], key[1], 0.0, col]) ##add
             kDownEvents.remove(key)
         for i, seed in enumerate(seedPoints):
@@ -136,9 +143,9 @@ def pressCol():
         if(modeBtn in kDownEvents):
             return
         for x,y in kDownEvents:
-            colInd = colors.index(pixelGrid[y][x]) #get current col ind
-            colInd = (colInd + 1)%len(colors) #increment color ind
-            pixelGrid[y][x] = colors[colInd] #set new color
+            colInd = colList.index(pixelGrid[y][x]) #get current col ind
+            colInd = (colInd + 1)%len(colList) #increment color ind
+            pixelGrid[y][x] = colList[colInd] #set new color
         grid.drawGrid(pixelGrid)
         while(time.time()<nextDrawTime):
             pass    
@@ -220,7 +227,7 @@ def heatMap():
     cHeatLoss = 0.99   #heat lost per cell per loop
     cHeatAdd = .1    #heat added per button per loop
     transition(heatCol(0), 1/20)
-    drawInterval = 1/40
+    drawInterval = 1/20
     while(True):
         nextDrawTime = time.time()+drawInterval
         
@@ -292,96 +299,33 @@ def simon():
         if(restart):#restart game
             simonSequence = []
 
-def snowgame():
-    white = 0xffffff
-    while(True): #restart loop, loop after end of game
-        piles = [0 for __ in range(8)] #acumulated pixel height
-        current = [[] for __ in range(8)] #currently falling flakes
-        score = 0
-        movInterval = 3/4
-        nextMov = time.time()+movInterval
-        addInterval = 2
-        nextAdd = time.time()
-        drawInt = 1/10
-        while(True): #gameplay loop, loop for each frame
-            nextDrawTime = time.time()+drawInt
-            grid.setCol()
-            #add more flakes
-            if(time.time()>nextAdd):
-                current[random.randint(0,7)].append(7)
-                nextAdd = time.time() + addInterval
-                addInterval *=.96
-            #move/remove flakes
-            if(time.time()>nextMov):
-                nextMov = time.time()+movInterval
-                movInterval *= .99
-                for x, vals in enumerate(current):
-                    for i, y in enumerate(vals):
-                        if(y < piles[x]):
-                            current[x].remove(y)
-                            piles[x] += 1
-                            continue
-                        current[x][i] -=1
-            #draw flakes
-            for x, vals in enumerate(current):
-                for y in vals:
-                    grid.drawPixel(x,y, white)        
-            if(max(piles)==8):
-                break
-            #draw piles
-            for x, height in enumerate(piles):
-                for i in range(height):
-                    grid.drawPixel(x, i, white) 
-            keys = grid.readKeys()[0]
-            if(modeBtn in keys):
-                return
-            for x, y in keys:
-                if(len(current[x])==0):
-                    continue
-                score += 1
-                current[x].remove(min(current[x]))
+def paintTTT(x,y,col):
+    grid.drawPixel(x*3,y*3,col)
+    grid.drawPixel(x*3+1,y*3,col)
+    grid.drawPixel(x*3,y*3+1,col)
+    grid.drawPixel(x*3+1,y*3+1,col)
+def tictactoe():
+    drawInterval = 1/20
+    while(True):
+        ticGrid = [[0,0,0] for __ in range(3)]
+        for i in range(8):
+            grid.drawPixel(i, 2, colors["white"]) 
+            grid.drawPixel(i, 5, colors["white"]) 
+            grid.drawPixel(2, i, colors["white"]) 
+            grid.drawPixel(5, i, colors["white"])
+        grid.stripShow()
+        paintTTT(1,1,colors["red"])
+        while(True):
+            nextDrawTime = time.time()+drawInterval
+            newKeys = grid.readKeys()[0]
+
             while(time.time()<nextDrawTime):
                 pass
-        clearDown(.2)
-        font.drawString("sc")
-        time.sleep(1)
-        grid.setCol()
-        font.drawNum(score)
-        time.sleep(2)
-
-def lines():
-    pressedGrid = []
-    for y in range(8):
-        row = []
-        for x in range(8):
-            row.append(0)
-        pressedGrid.append(row)
-    while(True):
-        keys = grid.readKeys()[0]
-        # print(keys)
-        if(len(keys)):
-            firstkey = keys[0]
-            x = firstkey[0]
-            y = firstkey[1]
-            if(modeBtn in keys):
-                return
-            if(pressedGrid[y][x]==1):    
-                for val in range(8):
-                    grid.drawPixel(val,y, 0)
-                    grid.drawPixel(x,val, 0)
-                pressedGrid[y][x] = 0
-            else:
-                pressedGrid[y][x] = 1
-                for val in range(8):
-                    grid.drawPixel(val,y, colors[5])
-                    grid.drawPixel(x,val, colors[2])
-        grid.show()
-        time.sleep(1/20)
 
 def mainLoop():
     """dispatches control to different operating modes, resetting the grid in between"""
     mode = 0
-    modes = [pressCol, rainbow, wave, simon, heatMap]
+    modes = [tictactoe, pressCol, rainbow, wave, simon, heatMap]
 
     while(True):
         # print("Entering mode {}".format(mode))
