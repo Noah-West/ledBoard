@@ -128,7 +128,7 @@ def calcWavePoint(grid, point):
 def wave():
     """creates circular waves that mova away from a button press"""
     seedPoints = []
-    drawInterval = 1/40
+    drawInterval = 1/15
 
     while(True):
         nextDrawTime = time.time()+drawInterval
@@ -147,7 +147,7 @@ def wave():
             if seed[2] > 10:
                 seedPoints.remove(seed)
                 continue
-            seedPoints[i][2] = seedPoints[i][2]*1.02+.05
+            seedPoints[i][2] = seedPoints[i][2]*1.03+.14
             calcWavePoint(pixelGrid, seedPoints[i])
         grid.drawGrid(pixelGrid)
 
@@ -416,7 +416,7 @@ def tictactoe():
 def mainLoop():
     """dispatches control to different operating modes, resetting the grid in between"""
     mode = 0
-    modes = [tictactoe, pressCol, rainbow, wave, simon, heatMap]
+    modes = [pressCol, wave, tictactoe, rainbow, simon, heatMap]
 
     while(True):
         # print("Entering mode {}".format(mode))
