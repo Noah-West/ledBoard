@@ -386,17 +386,22 @@ def tictactoe():
     plrToggle = 1
     while(True):
         tGrid = [[0, 0, 0] for __ in range(3)]
+        bttnCount = 0
         for i in range(8):
             grid.drawPixel(i, 2, colors["white"])
             grid.drawPixel(i, 5, colors["white"])
             grid.drawPixel(2, i, colors["white"])
             grid.drawPixel(5, i, colors["white"])
+        paintTTT(tGrid)
         grid.stripShow()
+        grid.readKeys()
         while(True):
             nextDrawTime = time.time()+drawInterval
             newKeys = grid.readKeys()[0]
             if(newKeys):
                 x, y = newKeys[0]
+                if((x,y) == modeBtn):
+                    return
                 if(x in (2, 5) or y in (2, 5)):
                     continue
                 x = floor(x/3)
@@ -405,7 +410,11 @@ def tictactoe():
                 if(tGrid[x][y] == 0):
                     tGrid[x][y] = plrToggle
                     plrToggle = 1 if plrToggle == 2 else 2
+                    bttnCount += 1
                 paintTTT(tGrid)
+                if(bttnCount == 9):
+                    time.sleep(.5)
+                    break
                 if(checkWin(tGrid, winSets)):
                     break
                 grid.stripShow()
