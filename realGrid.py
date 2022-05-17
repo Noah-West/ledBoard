@@ -94,12 +94,6 @@ def setCol(c=0, n=range(384)):
         strip.setPixelColor(i, c)
     strip.show()
 
-# passthrough functions to abstract hardwar from the main code
-
-
-def setLED(n, col):
-    strip.setPixelColor(n, col)
-
 
 def stripShow():
     strip.show()

@@ -4,31 +4,29 @@ import threading
 newKeys = []
 heldKeys = []
 keyLock = threading.Lock()
+memGrid = [[0 for i in range(8)]for i in range(8)]
+
 
 bttnGrid = [[]for i in range(8)]
-
-# util functions
 
 
 def startup():
     global bttnGrid, canvas
 
     window = tk.Tk()
-    window.title("Hello wold")
-    window.geometry("400x400")
+    window.title("YS LED Board Emulator")
+    # window.geometry("400x400")
 
     bttnGrid = [[0 for x in range(8)] for y in range(8)]
     canvas = tk.Canvas(width=400, height=400, bg="blue")
 
     for y in range(8):
         for x in range(8):
-            bttnGrid[7-y][7-x] = canvas.create_rectangle(
-                x*50, y*50, x*50+50, y*50+50, fill='#000000', outline='#FFFFFF')
+            bttnGrid[x][y] = canvas.create_rectangle(
+                x*50, (7-y)*50, x*50+50, (7-y)*50+50, fill='#000000', outline='#FFFFFF')
     canvas.bind("<Button-1>", lambda a: bttnPress(a))
     canvas.bind("<ButtonRelease-1>", lambda a: bttnRelease(a))
     canvas.pack()
-
-    # start  main functionality
 
 
 def block():
@@ -49,9 +47,8 @@ def cleanupGrid():
 
 def bttnPress(a):
     with keyLock:
-        # global heldKeys, newKeys #don't think I need?
-        newKeys.append((7-int(a.x/50), 7-int(a.y/50)))
-        heldKeys.append((7-int(a.x/50), 7-int(a.y/50)))
+        newKeys.append((7-int(a.y/50), int(a.x/50)))
+        heldKeys.append((7-int(a.y/50), int(a.x/50)))
 
 
 def bttnRelease(a):
@@ -76,24 +73,22 @@ def drawGrid(grid):
     for y, row in enumerate(grid):
         for x, val in enumerate(row):
             drawPixel(x, y, val)
+    stripShow()
 
 
 def drawPixel(x, y, c):
-    global canvas
-    canvas.itemconfigure(bttnGrid[y][x], fill="#{:06x}".format(c))
-
+    memGrid[y][x] = c
 
 def setCol(c=0, n=range(384)):
     for x in range(8):
         for y in range(8):
             drawPixel(x, y, c)
-
-# passthrough functions to abstract hardwar from the main code
-
-
-def setLED(n, col):
-    pass
+    stripShow()
 
 
 def stripShow():
-    pass
+    global canvas
+    for y, row in enumerate(memGrid):
+        for x, val in enumerate(row):
+            canvas.itemconfigure(bttnGrid[y][x], fill="#{:06x}".format(val))
+
