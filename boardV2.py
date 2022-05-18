@@ -447,7 +447,6 @@ def mainLoop():
         transition(col=0x888888)
         transition(0)
         grid.setCol()
-        grid.cleanupGrid()
         time.sleep(.25)
 
 

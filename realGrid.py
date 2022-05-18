@@ -88,9 +88,6 @@ def stripShow():
     strip.show()
 
 
-lastKeys = []
-
-
 def readKeys():
     """Returns newly pressed keys, as well as all keys being held
     (List newKeys, List pressedKeys)"""
