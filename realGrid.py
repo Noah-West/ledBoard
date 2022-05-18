@@ -38,8 +38,6 @@ keys = ((0,  1,  2,  3,  4,  5,  6,  7),
         (56, 57, 58, 59, 60, 61, 62, 63))
 keypad = adafruit_matrixkeypad.Matrix_Keypad(rows, cols, keys)
 
-# util functions
-
 
 def startup():
     """Create NeoPixel object with appropriate configuration."""
@@ -57,15 +55,6 @@ def block():
             pass
     except KeyboardInterrupt:
         setCol()
-
-
-def cleanupGrid():
-    """Tidy up board variables"""
-    pixelGrid = [[0 for x in range(8)] for y in range(8)]  # wipe pixel grid
-    global lastKeys
-    lastKeys = []
-
-# functions for interfacing with drawing
 
 
 def drawGrid(grid):
@@ -99,7 +88,6 @@ def stripShow():
     strip.show()
 
 
-# get keypresses
 lastKeys = []
 
 
