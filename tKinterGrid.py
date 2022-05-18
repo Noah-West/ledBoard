@@ -36,39 +36,6 @@ def block():
         setCol()
 
 
-def cleanupGrid():
-    global heldKeys, newKeys
-    with keyLock:
-        heldKeys = []
-        newKeys = []
-
-# key input functions
-
-
-def bttnPress(a):
-    with keyLock:
-        newKeys.append((7-int(a.y/50), int(a.x/50)))
-        heldKeys.append((7-int(a.y/50), int(a.x/50)))
-
-
-def bttnRelease(a):
-    with keyLock:
-        global heldKeys
-        heldKeys = []
-
-
-def readKeys():
-    """Returns newly pressed keys, as well as all keys being held
-    (List newKeys, List pressedKeys)"""
-    with keyLock:
-        global newKeys
-        locNewKeys = newKeys
-        newKeys = []
-        return(locNewKeys, heldKeys)
-
-# drawing functions
-
-
 def drawGrid(grid):
     for y, row in enumerate(grid):
         for x, val in enumerate(row):
@@ -78,6 +45,7 @@ def drawGrid(grid):
 
 def drawPixel(x, y, c):
     memGrid[y][x] = c
+
 
 def setCol(c=0, n=range(384)):
     for x in range(8):
@@ -92,3 +60,24 @@ def stripShow():
         for x, val in enumerate(row):
             canvas.itemconfigure(bttnGrid[y][x], fill="#{:06x}".format(val))
 
+
+def readKeys():
+    """Returns newly pressed keys, as well as all keys being held
+    (List newKeys, List pressedKeys)"""
+    with keyLock:
+        global newKeys
+        locNewKeys = newKeys
+        newKeys = []
+        return(locNewKeys, heldKeys)
+
+
+def bttnPress(a):
+    with keyLock:
+        newKeys.append((7-int(a.y/50), int(a.x/50)))
+        heldKeys.append((7-int(a.y/50), int(a.x/50)))
+
+
+def bttnRelease(a):
+    with keyLock:
+        global heldKeys
+        heldKeys = []

@@ -28,6 +28,7 @@ colors = {
     "green": rgbColor(0, 255, 0),
     "blue": rgbColor(0, 0, 255),
     "white": rgbColor(200, 200, 200),
+    "orange" : rgbColor(240, 131, 29),
     "off": 0
 }
 
@@ -393,11 +394,11 @@ def tictactoe():
             grid.drawPixel(5, i, colors["white"])
         paintTTT(tGrid)
         grid.stripShow()
-        grid.readKeys()
+        grid.readKeys() #consume input
         while(True):
             nextDrawTime = time.time()+drawInterval
             newKeys = grid.readKeys()[0]
-            if(newKeys):
+            if(len(newKeys)>0):
                 x, y = newKeys[0]
                 if((x,y) == modeBtn):
                     return
@@ -420,6 +421,17 @@ def tictactoe():
             while(time.time() < nextDrawTime):
                 pass
 
+def ysLogo():
+    grid.drawPixel(0,1, colors["orange"])
+    grid.stripShow()
+    
+    while(True):
+        exit = grid.readKeys()[0]
+
+        for x,y in exit:
+            if x==0 and y == 0:
+                return
+
 
 def mainLoop():
     """dispatches control to different operating modes, resetting the grid in between"""
@@ -434,7 +446,6 @@ def mainLoop():
         transition(col=0x888888)
         transition(0)
         grid.setCol()
-        grid.cleanupGrid()
         time.sleep(.25)
 
 
