@@ -5,30 +5,38 @@ if(main.realBoard):
     import realGrid as grid
 else:
     import tKinterGrid as grid
+
+
 letters = [[]for __ in range(27)]
-letters[3] = [(2, 4), (1, 4), (0, 3), (0, 2), (0, 1), (2, 0), (1, 0)]  # C
-letters[8] = [(2, 4), (0, 4), (2, 3), (0, 3), (2, 2), (1, 2),
-              (0, 2), (2, 1), (0, 1), (2, 0), (0, 0)]  # H
-letters[19] = [(2, 4), (1, 4), (0, 4), (2, 3), (2, 2), (1, 2),
-               (0, 2), (0, 1), (2, 0), (1, 0), (0, 0)]  # S
-digits = [
-    [(2, 4), (1, 4), (0, 4), (2, 3), (0, 3), (2, 2),
-     (0, 2), (2, 1), (0, 1), (2, 0), (1, 0), (0, 0)],
-    [(2, 4), (1, 4), (0, 4), (1, 3), (1, 2), (1, 1), (0, 1), (1, 0)],
-    [(2, 4), (1, 4), (0, 4), (0, 3), (1, 2), (2, 1), (2, 0), (1, 0), (0, 0)],
-    [(2, 4), (1, 4), (0, 4), (2, 3), (2, 2),
-     (1, 2), (2, 1), (2, 0), (1, 0), (0, 0)],
-    [(2, 4), (2, 3), (2, 2), (1, 2), (0, 2), (2, 1), (0, 1), (2, 0), (0, 0)],
-    [(2, 4), (1, 4), (0, 4), (2, 3), (2, 2), (1, 2),
-     (0, 2), (0, 1), (2, 0), (1, 0), (0, 0)],
-    [(2, 4), (1, 4), (0, 4), (2, 3), (0, 3), (2, 2),
-     (1, 2), (0, 2), (0, 1), (2, 0), (1, 0), (0, 0)],
-    [(1, 4), (1, 3), (1, 2), (2, 1), (2, 0), (1, 0), (0, 0)],
-    [(2, 4), (1, 4), (0, 4), (2, 3), (0, 3), (2, 2), (1, 2),
-     (0, 2), (2, 1), (0, 1), (2, 0), (1, 0), (0, 0)],
-    [(2, 4), (1, 4), (0, 4), (2, 3), (2, 2), (1, 2),
-     (0, 2), (2, 1), (0, 1), (2, 0), (1, 0), (0, 0)]
-]
+letters[3] = [(3, 2), (3, 1), (4, 0), (5, 0), (6, 0), (7, 2), (7, 1)]  # C
+letters[8] = [(3, 2), (3, 0), (4, 2), (4, 0), (5, 2), (5, 1),
+              (5, 0), (6, 2), (6, 0), (7, 2), (7, 0)]  # H
+letters[19] = [(3, 2), (3, 1), (3, 0), (4, 2), (5, 2), (5, 1),
+               (5, 0), (6, 0), (7, 2), (7, 1), (7, 0)]  # S
+digits = [[(3, 2), (3, 1), (3, 0), (4, 2), (4, 0), (5, 2), (5, 0), (6, 2), (6, 0), (7, 2), (7, 1), (7, 0)],
+          [(3, 2), (3, 1), (3, 0), (4, 1), (5, 1), (6, 1), (6, 0), (7, 1)],
+          [(3, 2), (3, 1), (3, 0), (4, 0), (5, 1), (6, 2), (7, 2), (7, 1), (7, 0)],
+          [(3, 2), (3, 1), (3, 0), (4, 2), (5, 2),
+           (5, 1), (6, 2), (7, 2), (7, 1), (7, 0)],
+          [(3, 2), (4, 2), (5, 2), (5, 1), (5, 0), (6, 2), (6, 0), (7, 2), (7, 0)],
+          [(3, 2), (3, 1), (3, 0), (4, 2), (5, 2), (5, 1),
+           (5, 0), (6, 0), (7, 2), (7, 1), (7, 0)],
+          [(3, 2), (3, 1), (3, 0), (4, 2), (4, 0), (5, 2),
+           (5, 1), (5, 0), (6, 0), (7, 2), (7, 1), (7, 0)],
+          [(3, 1), (4, 1), (5, 1), (6, 2), (7, 2), (7, 1), (7, 0)],
+          [(3, 2), (3, 1), (3, 0), (4, 2), (4, 0), (5, 2), (5, 1),
+           (5, 0), (6, 2), (6, 0), (7, 2), (7, 1), (7, 0)],
+          [(3, 2), (3, 1), (3, 0), (4, 2), (5, 2), (5, 1),
+           (5, 0), (6, 2), (6, 0), (7, 2), (7, 1), (7, 0)]
+          ]
+
+
+def rotDigits():
+    for i, digit in enumerate(letters):
+        for j, coord in enumerate(digit):
+            x, y = coord
+            letters[i][j] = (7-y, x)
+    print(letters)
 
 
 def drawNum(num, col):
@@ -38,9 +46,9 @@ def drawNum(num, col):
     elif(num < 0):
         num = 0
     for x, y in digits[int(num/10)]:
-        grid.drawPixel(6-x, 7-y, col)
+        grid.drawPixel(x-1, y+1, col)
     for x, y in digits[num % 10]:
-        grid.drawPixel(2-x, 7-y, col)
+        grid.drawPixel(x-1, y+5, col)
 
 
 def drawString(str, col):
@@ -51,9 +59,9 @@ def drawString(str, col):
         str = " " + str
     str = str.upper()
     for x, y in letters[ord(str[0])-0x40]:
-        grid.drawPixel(6-x, 7-y, col)
+        grid.drawPixel(x-1, y+1, col)
     for x, y in letters[ord(str[1])-0x40]:
-        grid.drawPixel(2-x, 7-y, col)
+        grid.drawPixel(x-1, y+5, col)
 
 
 def fontInput():
@@ -80,7 +88,8 @@ def fontInput():
         for x, y in kDownEvents:
             colInd = main.colors.index(pixelGrid[y][x])  # get current col ind
             colInd = (colInd + 1) % 2  # increment color ind
-            pixelGrid[y][x] = main.colors[colInd]  # set new color
+            # set new color
+            pixelGrid[y][x] = main.colors["red"] if colInd == 0 else 0
         grid.drawGrid(pixelGrid)
         while(time.time() < nextDrawTime):
             pass
@@ -88,12 +97,15 @@ def fontInput():
 
 def testDigits():
     """testing for digits, increments on click"""
-    drawString("hs", main.colors[1])
+    drawString("hs", main.colors["red"])
+    grid.stripShow()
     time.sleep(2)
+    rotDigits()
     i = 0
     grid.setCol()
     while(True):
-        drawNum(i, main.colors[1])
+        drawNum(i, main.colors["red"])
+        grid.stripShow()
         keys = []
         while(not keys):
             keys = grid.readKeys()[0]
