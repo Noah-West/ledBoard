@@ -437,7 +437,7 @@ def ysLogo():
 def mainLoop():
     """dispatches control to different operating modes, resetting the grid in between"""
     mode = 0
-    modes = [ysLogo, pressCol, wave, tictactoe, rainbow, simon, heatMap]
+    modes = [pressCol, wave, tictactoe, rainbow, simon, heatMap]
 
     while(True):
         # print("Entering mode {}".format(mode))
