@@ -28,7 +28,7 @@ colors = {
     "green": rgbColor(0, 255, 0),
     "blue": rgbColor(0, 0, 255),
     "white": rgbColor(200, 200, 200),
-    "orange" : rgbColor(240, 131, 29),
+    "orange": rgbColor(240, 131, 29),
     "off": 0
 }
 
@@ -301,16 +301,17 @@ def simon():
     while(True):  # looping until modeBtn
         restart = False
         time.sleep(.5)
+        grid.setCol()
         simonSequence.append((random.randint(0, 1), random.randint(0, 1)))
         # showing the sequence
         for cx, cy in simonSequence:
             [grid.drawPixel(cx*4 + x+1-cx, cy*4 + y+1-cy, sColors[cy*2+cx])
              for x in range(3) for y in range(3)]
             grid.stripShow()
-            time.sleep(.6)
+            time.sleep(.4)
             grid.setCol(c=0)
             grid.stripShow()
-            time.sleep(.4)
+            time.sleep(.2)
         for cx, cy in simonSequence:
             # waiting for keypress
             while(True):
@@ -331,9 +332,19 @@ def simon():
                         grid.setCol(0)
                         grid.stripShow()
                         break
-            if(restart):  # break for cx...
+            if(restart):  # break for loop
                 break
         if(restart):  # restart game
+            time.sleep(.7)
+            cx, cy = simonSequence[-1]
+            [grid.drawPixel(cx*4 + x+1-cx, cy*4 + y+1-cy, sColors[cy*2+cx])
+             for x in range(3) for y in range(3)]
+            grid.stripShow()
+            time.sleep(.6)
+            grid.setCol()
+            font.drawNum(len(simonSequence)-1, colors["red"])
+            grid.stripShow()
+            time.sleep(1.5)
             simonSequence = []
 
 
@@ -347,7 +358,11 @@ def paintTTT(tGrid):
             grid.drawPixel(x*3+1, y*3+1, colors[col])
 
 
+plrWins = [0, 0, 0]
+
+
 def checkWin(tGrid, winSets):
+    """count of wins for each player, index 0 is draws"""
 
     for test in winSets:
         cols = []
@@ -370,12 +385,20 @@ def checkWin(tGrid, winSets):
         paintTTT(blank)
         grid.stripShow()
         time.sleep(.3)
+    time.sleep(.3)
+    plrWins[wCol] += 1
+    col = "red" if wCol == 1 else "blue"
+    grid.setCol()
+    font.drawNum(plrWins[wCol], colors[col])
+    grid.stripShow()
+    time.sleep(1)
     return True
 
 
 def tictactoe():
     drawInterval = 1/20
-
+    global plrWins
+    plrWins = [0, 0, 0]
     winSets = []
     winSets.append([(0, 0), (1, 1), (2, 2)])
     winSets.append([(2, 0), (1, 1), (0, 2)])
@@ -394,13 +417,13 @@ def tictactoe():
             grid.drawPixel(5, i, colors["white"])
         paintTTT(tGrid)
         grid.stripShow()
-        grid.readKeys() #consume input
+        grid.readKeys()  # consume input
         while(True):
             nextDrawTime = time.time()+drawInterval
             newKeys = grid.readKeys()[0]
-            if(len(newKeys)>0):
+            if(len(newKeys) > 0):
                 x, y = newKeys[0]
-                if((x,y) == modeBtn):
+                if((x, y) == modeBtn):
                     return
                 if(x in (2, 5) or y in (2, 5)):
                     continue
@@ -412,31 +435,37 @@ def tictactoe():
                     plrToggle = 1 if plrToggle == 2 else 2
                     bttnCount += 1
                 paintTTT(tGrid)
-                if(bttnCount == 9):
-                    time.sleep(.5)
-                    break
+                grid.stripShow()
                 if(checkWin(tGrid, winSets)):
                     break
-                grid.stripShow()
+                if(bttnCount == 9):
+                    time.sleep(.6) 
+                    grid.setCol()
+                    plrWins[0] += 1
+                    font.drawNum(plrWins[0], colors["white"])
+                    grid.stripShow()
+                    time.sleep(1) 
+                    break
             while(time.time() < nextDrawTime):
                 pass
 
+
 def ysLogo():
-    grid.drawPixel(0,1, colors["orange"])
+    grid.drawPixel(0, 1, colors["orange"])
     grid.stripShow()
-    
+
     while(True):
         exit = grid.readKeys()[0]
 
-        for x,y in exit:
-            if x==0 and y == 0:
+        for x, y in exit:
+            if x == 0 and y == 0:
                 return
 
 
 def mainLoop():
     """dispatches control to different operating modes, resetting the grid in between"""
     mode = 0
-    modes = [font.testDigits, pressCol, wave, tictactoe, rainbow, simon, heatMap]
+    modes = [tictactoe, pressCol, wave, tictactoe, rainbow, simon, heatMap]
 
     while(True):
         # print("Entering mode {}".format(mode))
