@@ -5,7 +5,6 @@
 # Direct port of the Arduino NeoPixel library strandtest example.  Showcases
 # various animations on a strip of NeoPixels.
 
-from math import floor
 from rpi_ws281x import *
 from neopixel import *
 import digitalio

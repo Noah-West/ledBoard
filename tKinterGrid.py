@@ -15,7 +15,6 @@ def startup():
 
     window = tk.Tk()
     window.title("YS LED Board Emulator")
-    # window.geometry("400x400")
 
     bttnGrid = [[0 for x in range(8)] for y in range(8)]
     canvas = tk.Canvas(width=400, height=400, bg="blue")

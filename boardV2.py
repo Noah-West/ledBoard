@@ -4,13 +4,14 @@
 # Direct port of the Arduino NeoPixel library strandtest example.  Showcases
 # various animations on a strip of NeoPixels.
 
-from math import floor, sqrt
-from operator import mod, xor
-import time
 import random
 import threading
-import font
+import time
+from math import floor, sqrt
 from os.path import exists as file_exists
+
+import font
+
 realBoard = False
 if(file_exists("realBoardFlag")):
     import realGrid as grid
